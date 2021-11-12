@@ -1,0 +1,129 @@
+package clusters
+
+import (
+	"context"
+	"fmt"
+	"strings"
+
+	apisV1 "github.com/rancher/rancher/pkg/apis/provisioning.cattle.io/v1"
+	rkev1 "github.com/rancher/rancher/pkg/apis/rke.cattle.io/v1"
+	"github.com/rancher/rancher/tests/framework/clients/rancher"
+	"github.com/rancher/rancher/tests/framework/pkg/wait"
+	"github.com/rancher/rancher/tests/integration/pkg/defaults"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
+)
+
+func ClusterReadyStatus(event watch.Event) (ready bool, err error) {
+	cluster := event.Object.(*apisV1.Cluster)
+
+	for _, condition := range cluster.Status.Conditions {
+		if strings.Contains(condition.Reason, "Error") {
+			return false, fmt.Errorf("there was an error: %s", condition.Message)
+		}
+	}
+	ready = cluster.Status.Ready
+	return ready, nil
+}
+
+func NewRKE2ClusterConfig(clusterName, namespace, cni, cloudCredentialSecretName, kubernetesVersion string, machinePools []apisV1.RKEMachinePool) *apisV1.Cluster {
+	typeMeta := metav1.TypeMeta{
+		Kind:       "Cluster",
+		APIVersion: "provisioning.cattle.io/v1",
+	}
+
+	//metav1.ObjectMeta
+	objectMeta := metav1.ObjectMeta{
+		Name:      clusterName,
+		Namespace: namespace,
+	}
+
+	etcd := &rkev1.ETCD{
+		SnapshotRetention:    5,
+		SnapshotScheduleCron: "0 */5 * * *",
+	}
+
+	chartValuesMap := rkev1.GenericMap{
+		Data: map[string]interface{}{},
+	}
+
+	machineGlobalConfigMap := rkev1.GenericMap{
+		Data: map[string]interface{}{
+			"cni":                 cni,
+			"disable-kube-proxy":  false,
+			"etcd-expose-metrics": false,
+			"profile":             nil,
+		},
+	}
+
+	localClusterAuthEndpoint := rkev1.LocalClusterAuthEndpoint{
+		CACerts: "",
+		Enabled: false,
+		FQDN:    "",
+	}
+
+	upgradeStrategy := rkev1.ClusterUpgradeStrategy{
+		ControlPlaneConcurrency:  "10%",
+		ControlPlaneDrainOptions: rkev1.DrainOptions{},
+		WorkerConcurrency:        "10%",
+		WorkerDrainOptions:       rkev1.DrainOptions{},
+	}
+
+	rkeSpecCommon := rkev1.RKEClusterSpecCommon{
+		ChartValues:           chartValuesMap,
+		MachineGlobalConfig:   machineGlobalConfigMap,
+		ETCD:                  etcd,
+		UpgradeStrategy:       upgradeStrategy,
+		MachineSelectorConfig: []rkev1.RKESystemConfig{},
+	}
+
+	rkeConfig := &apisV1.RKEConfig{
+		RKEClusterSpecCommon: rkeSpecCommon,
+		MachinePools:         machinePools,
+	}
+
+	spec := apisV1.ClusterSpec{
+		CloudCredentialSecretName: cloudCredentialSecretName,
+		KubernetesVersion:         kubernetesVersion,
+		LocalClusterAuthEndpoint:  localClusterAuthEndpoint,
+
+		RKEConfig: rkeConfig,
+	}
+
+	v1Cluster := &apisV1.Cluster{
+		TypeMeta:   typeMeta,
+		ObjectMeta: objectMeta,
+		Spec:       spec,
+	}
+
+	return v1Cluster
+}
+
+func CreateRKE2Cluster(client *rancher.Client, rke2Cluster *apisV1.Cluster) (*apisV1.Cluster, error) {
+	client.Session.RegisterCleanupFunc(func() error {
+		err := client.Provisioning.Clusters(rke2Cluster.Namespace).Delete(context.TODO(), rke2Cluster.GetName(), metav1.DeleteOptions{})
+		if err != nil {
+			return err
+		}
+
+		watchInterface, err := client.Provisioning.Clusters(rke2Cluster.Namespace).Watch(context.TODO(), metav1.ListOptions{
+			FieldSelector:  "metadata.name=" + rke2Cluster.GetName(),
+			TimeoutSeconds: &defaults.WatchTimeoutSeconds,
+		})
+
+		if err != nil {
+			return err
+		}
+
+		return wait.WatchWait(watchInterface, func(event watch.Event) (ready bool, err error) {
+			if event.Type == watch.Error {
+				return false, fmt.Errorf("there was an error deleting cluster")
+			} else if event.Type == watch.Deleted {
+				return true, nil
+			}
+			return false, nil
+		})
+	})
+
+	return client.Provisioning.Clusters(rke2Cluster.Namespace).Create(context.TODO(), rke2Cluster, metav1.CreateOptions{})
+}
