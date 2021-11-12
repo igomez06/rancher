@@ -5,12 +5,14 @@ import (
 
 	"github.com/rancher/rancher/tests/automation-framework/clientbase"
 	managementClient "github.com/rancher/rancher/tests/automation-framework/management"
+	provisioningClient "github.com/rancher/rancher/tests/automation-framework/provisioning"
 	"github.com/rancher/rancher/tests/automation-framework/testsession"
 	"k8s.io/client-go/rest"
 )
 
 type Client struct {
 	Management    *managementClient.Client
+	Provisioning  *provisioningClient.Client
 	RancherConfig *Config
 }
 
@@ -21,10 +23,18 @@ func NewClient(bearerToken string, rancherConfig *Config, testSession *testsessi
 	}
 
 	var err error
-	c.Management, err = managementClient.NewClient(clientOpts(newRestConfig(bearerToken, rancherConfig), c.RancherConfig), testSession)
+	restconfig := newRestConfig(bearerToken, rancherConfig)
+	c.Management, err = managementClient.NewClient(clientOpts(restconfig, c.RancherConfig), testSession)
 	if err != nil {
 		return nil, err
 	}
+
+	provClient, err := provisioningClient.NewForConfig(restconfig)
+	if err != nil {
+		return nil, err
+	}
+
+	c.Provisioning = provClient
 
 	return c, nil
 }
