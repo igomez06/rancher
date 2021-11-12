@@ -29,7 +29,7 @@ func NewClient(bearerToken string, rancherConfig *Config, testSession *testsessi
 		return nil, err
 	}
 
-	provClient, err := provisioningClient.NewForConfig(restconfig)
+	provClient, err := provisioningClient.NewForConfig(restconfig, testSession)
 	if err != nil {
 		return nil, err
 	}
