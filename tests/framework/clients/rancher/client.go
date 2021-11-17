@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	management "github.com/rancher/rancher/tests/framework/clients/rancher/generated/management/v3"
+	provisioning "github.com/rancher/rancher/tests/framework/clients/rancher/provisioning"
 	"github.com/rancher/rancher/tests/framework/pkg/clientbase"
 	"github.com/rancher/rancher/tests/framework/pkg/session"
 	"k8s.io/client-go/rest"
@@ -11,6 +12,7 @@ import (
 
 type Client struct {
 	Management    *management.Client
+	Provisioning  *provisioning.Client
 	RancherConfig *Config
 }
 
@@ -20,12 +22,20 @@ func NewClient(bearerToken string, rancherConfig *Config, session *session.Sessi
 	}
 
 	var err error
-	c.Management, err = management.NewClient(clientOpts(newRestConfig(bearerToken, rancherConfig), c.RancherConfig))
+	restConfig := newRestConfig(bearerToken, rancherConfig)
+	c.Management, err = management.NewClient(clientOpts(restConfig, c.RancherConfig))
 	if err != nil {
 		return nil, err
 	}
 
 	c.Management.Ops.Session = session
+
+	provClient, err := provisioning.NewForConfig(restConfig, session)
+	if err != nil {
+		return nil, err
+	}
+
+	c.Provisioning = provClient
 
 	return c, nil
 }

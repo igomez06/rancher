@@ -55,12 +55,11 @@ func NewRKE2ClusterConfig(clusterName, namespace, cni, cloudCredentialSecretName
 	}
 
 	rkeSpecCommon := rkev1.RKEClusterSpecCommon{
-		ChartValues:              chartValuesMap,
-		MachineGlobalConfig:      machineGlobalConfigMap,
-		ETCD:                     etcd,
-		LocalClusterAuthEndpoint: localClusterAuthEndpoint,
-		UpgradeStrategy:          upgradeStrategy,
-		MachineSelectorConfig:    []rkev1.RKESystemConfig{},
+		ChartValues:           chartValuesMap,
+		MachineGlobalConfig:   machineGlobalConfigMap,
+		ETCD:                  etcd,
+		UpgradeStrategy:       upgradeStrategy,
+		MachineSelectorConfig: []rkev1.RKESystemConfig{},
 	}
 
 	rkeConfig := &apisV1.RKEConfig{
@@ -69,9 +68,9 @@ func NewRKE2ClusterConfig(clusterName, namespace, cni, cloudCredentialSecretName
 	}
 
 	spec := apisV1.ClusterSpec{
-		CloudCredentialSecretName:            cloudCredentialSecretName,
-		KubernetesVersion:                    kubernetesVersion,
-		DefaultPodSecurityPolicyTemplateName: "",
+		CloudCredentialSecretName: cloudCredentialSecretName,
+		KubernetesVersion:         kubernetesVersion,
+		LocalClusterAuthEndpoint:  localClusterAuthEndpoint,
 
 		RKEConfig: rkeConfig,
 	}
