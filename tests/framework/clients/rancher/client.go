@@ -24,7 +24,8 @@ func NewClient(bearerToken string, rancherConfig *Config, session *session.Sessi
 	if err != nil {
 		return nil, err
 	}
-	c.Management.APIBaseClient.Ops.Session = session
+
+	c.Management.Ops.Session = session
 
 	return c, nil
 }
