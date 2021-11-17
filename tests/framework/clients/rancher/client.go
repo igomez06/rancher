@@ -3,7 +3,7 @@ package rancher
 import (
 	"fmt"
 
-	"github.com/rancher/rancher/tests/framework/clients/rancher/management"
+	management "github.com/rancher/rancher/tests/framework/clients/rancher/generated/management/v3"
 	"github.com/rancher/rancher/tests/framework/pkg/clientbase"
 	"github.com/rancher/rancher/tests/framework/pkg/session"
 	"k8s.io/client-go/rest"
@@ -20,10 +20,12 @@ func NewClient(bearerToken string, rancherConfig *Config, session *session.Sessi
 	}
 
 	var err error
-	c.Management, err = management.NewClient(clientOpts(newRestConfig(bearerToken, rancherConfig), c.RancherConfig), session)
+	c.Management, err = management.NewClient(clientOpts(newRestConfig(bearerToken, rancherConfig), c.RancherConfig))
 	if err != nil {
 		return nil, err
 	}
+
+	c.Management.Ops.Session = session
 
 	return c, nil
 }
