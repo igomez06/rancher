@@ -4,8 +4,6 @@ import (
 	"github.com/rancher/norman/types"
 )
 
-const CloudCredentialType = "cloudCredential"
-
 type CloudCredential struct {
 	types.Resource
 	Annotations                  map[string]string             `json:"annotations,omitempty"`
