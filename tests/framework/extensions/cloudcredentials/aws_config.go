@@ -1,6 +1,6 @@
 package cloudcredentials
 
-const AmazonEC2CredentialConfigurationFileKey = "amazonec2credentialConfig"
+const AmazonEC2CredentialConfigurationFileKey = "awsCredentials"
 
 type AmazonEC2CredentialConfig struct {
 	AccessKey     string `json:"accessKey" yaml:"accessKey"`

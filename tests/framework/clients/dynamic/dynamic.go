@@ -5,7 +5,6 @@ import (
 
 	"k8s.io/client-go/rest"
 
-	"github.com/rancher/rancher/tests/framework/clients/rancher"
 	"github.com/rancher/rancher/tests/framework/pkg/session"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -67,21 +66,4 @@ func (c *ResourceClient) Create(ctx context.Context, obj *unstructured.Unstructu
 	})
 
 	return c.ResourceInterface.Create(ctx, obj, opts, subresources...)
-}
-
-// GetRancherDynamicClient is a helper function that instantiates a dynamic client to communicate with the rancher host.
-func GetRancherDynamicClient(bearerToken string, rancherConfig *rancher.Config, session *session.Session) (dynamic.Interface, error) {
-	restConfig := &rest.Config{
-		Host:        rancherConfig.RancherHost,
-		BearerToken: bearerToken,
-		TLSClientConfig: rest.TLSClientConfig{
-			Insecure: *rancherConfig.Insecure,
-			CAFile:   rancherConfig.CAFile,
-		},
-	}
-	dynamic, err := NewForConfig(session, restConfig)
-	if err != nil {
-		return nil, err
-	}
-	return dynamic, nil
 }
