@@ -10,12 +10,12 @@ import (
 const awsCloudCredNameBase = "awsCloudCredential"
 
 func CreateAWSCloudCredentials(rancherClient *rancher.Client) (*cloudcredentials.CloudCredential, error) {
-	var s3CredentialConfig cloudcredentials.S3CredentialConfig
-	config.LoadConfig(cloudcredentials.S3CredentialConfigurationFileKey, &s3CredentialConfig)
+	var aazonEC2CredentialConfig cloudcredentials.AmazonEC2CredentialConfig
+	config.LoadConfig(cloudcredentials.AmazonEC2CredentialConfigurationFileKey, &aazonEC2CredentialConfig)
 
 	cloudCredential := cloudcredentials.CloudCredential{
-		Name:               awsCloudCredNameBase,
-		S3CredentialConfig: &s3CredentialConfig,
+		Name:                      awsCloudCredNameBase,
+		AmazonEC2CredentialConfig: &aazonEC2CredentialConfig,
 	}
 
 	resp := &cloudcredentials.CloudCredential{}

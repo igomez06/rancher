@@ -1,14 +1,9 @@
 package cloudcredentials
 
-const S3CredentialConfigurationFileKey = "s3CredentialConfig"
+const AmazonEC2CredentialConfigurationFileKey = "amazonec2credentialConfig"
 
-type S3CredentialConfig struct {
-	AccessKey            string `json:"accessKey"`
-	SecretKey            string `json:"secretKey"`
-	DefaultBucket        string `json:"defaultBucket,omitempty"`
-	DefaultEndpoint      string `json:"defaultEndpoint,omitempty"`
-	DefaultEndpointCA    string `json:"defaultEndpointCA,omitempty"`
-	DefaultFolder        string `json:"defaultFolder,omitempty"`
-	DefaultRegion        string `json:"defaultRegion,omitempty"`
-	DefaultSkipSSLVerify string `json:"defaultSkipSSLVerify,omitempty"`
+type AmazonEC2CredentialConfig struct {
+	AccessKey     string `json:"accessKey" yaml:"accessKey"`
+	SecretKey     string `json:"secretKey" yaml:"secretKey"`
+	DefaultRegion string `json:"defaultRegion,omitempty" yaml:"defaultRegion"`
 }

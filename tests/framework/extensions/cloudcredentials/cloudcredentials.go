@@ -13,7 +13,7 @@ type CloudCredential struct {
 	Labels                       map[string]string             `json:"labels,omitempty"`
 	Name                         string                        `json:"name,omitempty"`
 	Removed                      string                        `json:"removed,omitempty"`
-	S3CredentialConfig           *S3CredentialConfig           `json:"s3credentialConfig,omitempty"`
+	AmazonEC2CredentialConfig    *AmazonEC2CredentialConfig    `json:"amazonec2credentialConfig,omitempty"`
 	DigitalOceanCredentialConfig *DigitalOceanCredentialConfig `json:"digitaloceancredentialConfig,omitempty"`
 	UUID                         string                        `json:"uuid,omitempty"`
 }
