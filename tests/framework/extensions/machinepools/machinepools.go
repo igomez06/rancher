@@ -4,22 +4,27 @@ import (
 	"context"
 
 	apisV1 "github.com/rancher/rancher/pkg/apis/provisioning.cattle.io/v1"
+	"github.com/rancher/rancher/tests/framework/clients/rancher"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/dynamic"
 )
 
 // CreateMachineConfig is a helper method that actually creates the rke-machine-config
-func CreateMachineConfig(resource string, machinePoolConfig *unstructured.Unstructured, client dynamic.Interface) (*unstructured.Unstructured, error) {
+func CreateMachineConfig(resource string, machinePoolConfig *unstructured.Unstructured, client *rancher.Client) (*unstructured.Unstructured, error) {
 	groupVersionResource := schema.GroupVersionResource{
 		Group:    "rke-machine-config.cattle.io",
 		Version:  "v1",
 		Resource: resource,
 	}
 
-	return client.Resource(groupVersionResource).Namespace(machinePoolConfig.GetNamespace()).Create(context.TODO(), machinePoolConfig, metav1.CreateOptions{})
+	dynamic, err := client.GetRancherDynamicClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return dynamic.Resource(groupVersionResource).Namespace(machinePoolConfig.GetNamespace()).Create(context.TODO(), machinePoolConfig, metav1.CreateOptions{})
 }
 
 func NewRKEMachinePool(controlPlaneRole, etcdRole, workerRole bool, poolName string, quantity int32, machineConfig *unstructured.Unstructured) apisV1.RKEMachinePool {

@@ -16,6 +16,8 @@ type Client struct {
 	Management    *management.Client
 	Provisioning  *provisioning.Client
 	RancherConfig *Config
+	restcConfig   *rest.Config
+	session       *session.Session
 }
 
 func NewClient(bearerToken string, rancherConfig *Config, session *session.Session) (*Client, error) {
@@ -25,6 +27,8 @@ func NewClient(bearerToken string, rancherConfig *Config, session *session.Sessi
 
 	var err error
 	restConfig := newRestConfig(bearerToken, rancherConfig)
+	c.restcConfig = restConfig
+	c.session = session
 	c.Management, err = management.NewClient(clientOpts(restConfig, c.RancherConfig))
 	if err != nil {
 		return nil, err
@@ -63,8 +67,8 @@ func clientOpts(restConfig *rest.Config, rancherConfig *Config) *clientbase.Clie
 }
 
 // GetRancherDynamicClient is a helper function that instantiates a dynamic client to communicate with the rancher host.
-func (c *Client) GetRancherDynamicClient(bearerToken string, session *session.Session) (dynamic.Interface, error) {
-	dynamic, err := frameworkDynamic.NewForConfig(session, newRestConfig(bearerToken, c.RancherConfig))
+func (c *Client) GetRancherDynamicClient() (dynamic.Interface, error) {
+	dynamic, err := frameworkDynamic.NewForConfig(c.session, c.restcConfig)
 	if err != nil {
 		return nil, err
 	}
