@@ -14,7 +14,7 @@ import (
 const (
 	AWSKind           = "Amazonec2Config"
 	AWSPoolType       = "rke-machine-config.cattle.io.amazonec2config"
-	AWSResourceConfig = "amazonec2config"
+	AWSResourceConfig = "amazonec2configs"
 )
 
 func NewAWSMachineConfig(generatedPoolName, namespace, region string) *unstructured.Unstructured {
@@ -23,6 +23,7 @@ func NewAWSMachineConfig(generatedPoolName, namespace, region string) *unstructu
 	machineConfig.SetKind(AWSKind)
 	machineConfig.SetGenerateName(generatedPoolName)
 	machineConfig.SetNamespace(namespace)
+	machineConfig.Object["region"] = region
 	machineConfig.Object["instanceType"] = "t3a.medium"
 	machineConfig.Object["sshUser"] = "ubuntu"
 	machineConfig.Object["type"] = AWSPoolType
