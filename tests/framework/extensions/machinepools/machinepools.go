@@ -19,8 +19,7 @@ func CreateMachineConfig(resource string, machinePoolConfig *unstructured.Unstru
 		Resource: resource,
 	}
 
-	podResult, err := client.Resource(groupVersionResource).Namespace(machinePoolConfig.GetNamespace()).Create(context.TODO(), machinePoolConfig, metav1.CreateOptions{})
-	return podResult, err
+	return client.Resource(groupVersionResource).Namespace(machinePoolConfig.GetNamespace()).Create(context.TODO(), machinePoolConfig, metav1.CreateOptions{})
 }
 
 func NewRKEMachinePool(controlPlaneRole, etcdRole, workerRole bool, poolName string, quantity int32, machineConfig *unstructured.Unstructured) apisV1.RKEMachinePool {

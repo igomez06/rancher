@@ -3,10 +3,12 @@ package rancher
 import (
 	"fmt"
 
+	frameworkDynamic "github.com/rancher/rancher/tests/framework/clients/dynamic"
 	management "github.com/rancher/rancher/tests/framework/clients/rancher/generated/management/v3"
 	provisioning "github.com/rancher/rancher/tests/framework/clients/rancher/provisioning"
 	"github.com/rancher/rancher/tests/framework/pkg/clientbase"
 	"github.com/rancher/rancher/tests/framework/pkg/session"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 )
 
@@ -58,4 +60,13 @@ func clientOpts(restConfig *rest.Config, rancherConfig *Config) *clientbase.Clie
 		Insecure: restConfig.Insecure,
 		CACerts:  rancherConfig.CACerts,
 	}
+}
+
+// GetRancherDynamicClient is a helper function that instantiates a dynamic client to communicate with the rancher host.
+func (c *Client) GetRancherDynamicClient(bearerToken string, session *session.Session) (dynamic.Interface, error) {
+	dynamic, err := frameworkDynamic.NewForConfig(session, newRestConfig(bearerToken, c.RancherConfig))
+	if err != nil {
+		return nil, err
+	}
+	return dynamic, nil
 }

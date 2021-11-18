@@ -1,6 +1,6 @@
 package cloudcredentials
 
-const DigitalOceanCredentialConfigurationFileKey = "digitalOceanCredentialConfig"
+const DigitalOceanCredentialConfigurationFileKey = "digitalOceanCredentials"
 
 type DigitalOceanCredentialConfig struct {
 	AccessToken string `json:"accessToken" yaml:"accessToken"`
