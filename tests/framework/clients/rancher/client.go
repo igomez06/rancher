@@ -1,6 +1,7 @@
 package rancher
 
 import (
+	"context"
 	"fmt"
 
 	frameworkDynamic "github.com/rancher/rancher/tests/framework/clients/dynamic"
@@ -8,6 +9,9 @@ import (
 	provisioning "github.com/rancher/rancher/tests/framework/clients/rancher/provisioning"
 	"github.com/rancher/rancher/tests/framework/pkg/clientbase"
 	"github.com/rancher/rancher/tests/framework/pkg/session"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 )
@@ -73,4 +77,18 @@ func (c *Client) GetRancherDynamicClient() (dynamic.Interface, error) {
 		return nil, err
 	}
 	return dynamic, nil
+}
+
+func (c *Client) GetManagementWatchInterface(resourseType string, opts metav1.ListOptions) (watch.Interface, error) {
+	groupVersionResource := schema.GroupVersionResource{
+		Group:    "management.cattle.io",
+		Version:  "v3",
+		Resource: resourseType,
+	}
+	dynamicClient, err := c.GetRancherDynamicClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return dynamicClient.Resource(groupVersionResource).Namespace("").Watch(context.TODO(), opts)
 }

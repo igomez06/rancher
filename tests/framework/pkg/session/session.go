@@ -2,13 +2,9 @@ package session
 
 import (
 	"testing"
-
-	"github.com/rancher/rancher/tests/framework/pkg/wait"
-	"k8s.io/apimachinery/pkg/watch"
 )
 
 type CleanupFunc func() error
-type WaitFunc func(watchInterface watch.Interface, check wait.CheckFunc) error
 
 type Session struct {
 	cleanupQueue []CleanupFunc
