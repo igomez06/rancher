@@ -6,7 +6,9 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 )
 
-func WatchWait(watchInterface watch.Interface, check CheckFunc) error {
+type WatchCheckFunc func(watch.Event) (bool, error)
+
+func WatchWait(watchInterface watch.Interface, check WatchCheckFunc) error {
 	defer func() {
 		watchInterface.Stop()
 	}()
@@ -17,18 +19,13 @@ func WatchWait(watchInterface watch.Interface, check CheckFunc) error {
 			if !open {
 				return fmt.Errorf("timeout waiting on condition")
 			}
-			switch event.Type {
-			case watch.Modified:
-				err := wait(check)
-				if err != nil {
-					return err
-				}
-				return nil
-			case watch.Deleted:
-				err := wait(check)
-				if err != nil {
-					return err
-				}
+
+			done, err := check(event)
+			if err != nil {
+				return err
+			}
+
+			if done {
 				return nil
 			}
 		}

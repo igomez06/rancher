@@ -10,11 +10,13 @@ import (
 	"net/url"
 	"reflect"
 	"regexp"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"github.com/rancher/norman/types"
 	"github.com/rancher/rancher/tests/framework/pkg/session"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 type APIOperations struct {
@@ -205,6 +207,18 @@ func (a *APIOperations) DoCreate(schemaType string, createObj interface{}, respO
 	a.Session.RegisterCleanupFunc(func() error {
 		obj := resource.Interface().(types.Resource)
 		return a.DoResourceDelete(schemaType, &obj)
+	})
+
+	a.Session.RegisterWaitFunc(func() error {
+		return wait.Poll(1*time.Second, 1*time.Minute, func() (bool, error) {
+			idField := reflect.Indirect(v).FieldByName("ID")
+			id := idField.Interface().(string)
+			err = a.DoByID(schemaType, id, respObject)
+			if err != nil {
+				return true, nil
+			}
+			return false, err
+		})
 	})
 
 	return err
