@@ -5,14 +5,13 @@ import (
 	"strings"
 
 	apisV1 "github.com/rancher/rancher/pkg/apis/provisioning.cattle.io/v1"
-	v1 "github.com/rancher/rancher/pkg/apis/provisioning.cattle.io/v1"
 	rkev1 "github.com/rancher/rancher/pkg/apis/rke.cattle.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 )
 
 var ClusterReadyStatusFunc = func(event watch.Event) (ready bool, err error) {
-	cluster := event.Object.(*v1.Cluster)
+	cluster := event.Object.(*apisV1.Cluster)
 	count := 0
 
 	for _, condition := range cluster.Status.Conditions {
