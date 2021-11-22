@@ -1,10 +1,31 @@
 package clusters
 
 import (
+	"fmt"
+	"strings"
+
 	apisV1 "github.com/rancher/rancher/pkg/apis/provisioning.cattle.io/v1"
+	v1 "github.com/rancher/rancher/pkg/apis/provisioning.cattle.io/v1"
 	rkev1 "github.com/rancher/rancher/pkg/apis/rke.cattle.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 )
+
+var ClusterReadyStatusFunc = func(event watch.Event) (ready bool, err error) {
+	cluster := event.Object.(*v1.Cluster)
+	count := 0
+
+	for _, condition := range cluster.Status.Conditions {
+		if strings.Contains(condition.Reason, "Error") {
+			count += 1
+			if count == 10 {
+				return false, fmt.Errorf("there was an error: %s", condition.Message)
+			}
+		}
+	}
+	ready = cluster.Status.Ready
+	return ready, nil
+}
 
 func NewRKE2ClusterConfig(clusterName, namespace, cni, cloudCredentialSecretName, kubernetesVersion string, machinePools []apisV1.RKEMachinePool) *apisV1.Cluster {
 	typeMeta := metav1.TypeMeta{
