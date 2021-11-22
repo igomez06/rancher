@@ -70,6 +70,21 @@ func clientOpts(restConfig *rest.Config, rancherConfig *Config) *clientbase.Clie
 	}
 }
 
+func (c *Client) AsUser(user *management.User) (*Client, error) {
+	token := &management.Token{
+		UserID: user.ID,
+	}
+
+	returnedToken, err := c.Management.Token.Create(token)
+	if err != nil {
+		return nil, err
+	}
+
+	bearerToken := returnedToken.Token
+
+	return NewClient(bearerToken, c.RancherConfig, c.session)
+}
+
 // GetRancherDynamicClient is a helper function that instantiates a dynamic client to communicate with the rancher host.
 func (c *Client) GetRancherDynamicClient() (dynamic.Interface, error) {
 	dynamic, err := frameworkDynamic.NewForConfig(c.session, c.restConfig)
