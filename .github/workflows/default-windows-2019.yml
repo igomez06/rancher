@@ -344,3 +344,5 @@ jobs:
           sudo pip3 install tox flake8
       - name: Run Tests
         run: sudo -E ./scripts/entry temp
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3

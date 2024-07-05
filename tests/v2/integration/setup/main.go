@@ -110,7 +110,7 @@ func main() {
 
 	_, err = k3d.CreateAndImportK3DCluster(client, clusterName, agentImage, "", 1, 0, true)
 	if err != nil {
-		logrus.Fatalf("error creating and importing a k3d cluster: %v", err)
+		logrus.Infof("error creating and importing a k3d cluster: %v", err)
 	}
 }
 
