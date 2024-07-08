@@ -127,7 +127,6 @@ func (w *RancherManagedChartsTest) resetSettings() {
 }
 
 func TestRancherManagedChartsSuite(t *testing.T) {
-	t.Skip()
 	suite.Run(t, new(RancherManagedChartsTest))
 }
 
@@ -406,10 +405,20 @@ func (w *RancherManagedChartsTest) resetManagementCluster() {
 }
 
 func (w *RancherManagedChartsTest) updateSetting(name, value string) error {
-	// Use the Steve client instead of the main one to be able to set a setting's value to an empty string.
-	existing, err := w.client.Steve.SteveType("management.cattle.io.setting").ByID(name)
+	var existing *stevev1.SteveAPIObject
+	var updateError error
+	err := kwait.PollUntilContextTimeout(context.TODO(), 500*time.Millisecond, 5*time.Minute, true, func(ctx context.Context) (done bool, err error) {
+		// Use the Steve client instead of the main one to be able to set a setting's value to an empty string.
+		existing, err = w.client.Steve.SteveType("management.cattle.io.setting").ByID(name)
+		if err != nil {
+			updateError = err
+			return false, nil
+		}
+
+		return true, nil
+	})
 	if err != nil {
-		return err
+		return fmt.Errorf("error update setting %v: %v", err, updateError)
 	}
 
 	var s v3.Setting
